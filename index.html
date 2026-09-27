@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Streak</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Streak">
+<meta name="theme-color" content="#EEF2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101828" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{
+  --bg:#EEF2F7; --ink:#16223B; --muted:#6F7A90; --line:#D5DCE7;
+  --gold:#E8A317; --gold-soft:#F8E3B3; --card:#FFFFFF;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#101828; --ink:#EEF2F7; --muted:#8C97AD; --line:#26324A;
+    --gold:#F0B429; --gold-soft:#3A3220; --card:#172238; }
+}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{
+  font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
+  -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none;
+  min-height:100%;
+}
+main{max-width:460px;margin:0 auto;padding:12px 20px 32px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+.habits{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.habits::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:8px 16px;font-size:15px;font-weight:600;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chip.add{border-style:dashed}
+
+.hero{text-align:center;padding:28px 0 20px}
+.count{font-size:clamp(112px,38vw,168px);font-weight:800;line-height:.9;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.count.alive{color:var(--gold)}
+.unit{font-size:19px;font-weight:600;margin-top:6px}
+.stats{display:flex;justify-content:center;gap:28px;margin-top:18px;color:var(--muted);font-size:14px}
+.stats b{display:block;color:var(--ink);font-size:20px}
+
+.mark{display:block;width:100%;border:0;border-radius:20px;padding:20px;font-size:19px;font-weight:700;
+  background:var(--ink);color:var(--bg);transition:transform .12s, background .2s}
+.mark:active{transform:scale(.97)}
+.mark.done{background:var(--gold);color:#16223B}
+.hint{text-align:center;color:var(--muted);font-size:13px;margin:8px 0 0;min-height:18px}
+
+.cal{margin-top:28px;background:var(--card);border-radius:22px;padding:16px}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.calhead h2{font-size:17px;margin:0}
+.nav{border:0;background:transparent;font-size:22px;width:40px;height:40px;border-radius:12px}
+.nav:disabled{opacity:.25}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.dow{font-size:12px;color:var(--muted);font-weight:600;padding-bottom:2px}
+.day{aspect-ratio:1;border:0;border-radius:50%;background:transparent;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;padding:0}
+.day.on{background:var(--gold);color:#16223B}
+.day.today{box-shadow:inset 0 0 0 2px var(--ink)}
+.day.on.today{box-shadow:inset 0 0 0 2px var(--ink)}
+.day:disabled{color:var(--line);cursor:default}
+.calnote{font-size:12px;color:var(--muted);margin:10px 0 0;text-align:center}
+
+details{margin-top:24px;color:var(--muted);font-size:15px}
+summary{cursor:pointer;padding:8px 0;font-weight:600}
+.tools{display:grid;gap:8px;padding-top:6px}
+.tool{border:1.5px solid var(--line);background:transparent;border-radius:14px;padding:12px;text-align:left;color:var(--ink)}
+.tool.danger{color:#C2412D}
+.privacy{font-size:13px;line-height:1.5;margin:14px 0 0}
+.sync{margin-top:18px;border-top:1.5px solid var(--line);padding-top:14px}
+.sync h3{font-size:15px;margin:0 0 4px;color:var(--ink)}
+.status{font-size:13px;margin:0 0 10px;min-height:18px}
+.status.ok{color:#2E7D4F}
+.status.bad{color:#C2412D}
+.field{display:block}
+.field span{display:block;font-size:12px;margin-bottom:4px}
+input{width:100%;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:10px;font:14px ui-monospace,monospace;-webkit-user-select:text;user-select:text}
+textarea{width:100%;min-height:90px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:10px;font:13px ui-monospace,monospace;-webkit-user-select:text;user-select:text}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <nav class="habits" id="habits" aria-label="Habits"></nav>
+
+  <section class="hero">
+    <div class="count" id="count">0</div>
+    <div class="unit" id="unit">day streak</div>
+    <div class="stats">
+      <div><b id="best">0</b>best</div>
+      <div><b id="total">0</b>days total</div>
+    </div>
+  </section>
+
+  <button class="mark" id="mark">Mark today done</button>
+  <p class="hint" id="hint"></p>
+
+  <section class="cal" aria-label="Calendar">
+    <div class="calhead">
+      <button class="nav" id="prev" aria-label="Previous month">‹</button>
+      <h2 id="month"></h2>
+      <button class="nav" id="next" aria-label="Next month">›</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p class="calnote">Tap a past day to fix a missed check-in.</p>
+  </section>
+
+  <details>
+    <summary>Settings and backup</summary>
+    <div class="tools">
+      <button class="tool" id="rename">Rename this habit</button>
+      <button class="tool" id="backup">Copy backup</button>
+      <button class="tool" id="restore">Restore from backup</button>
+      <textarea id="box" hidden placeholder="Paste your backup here, then tap Restore again"></textarea>
+      <button class="tool danger" id="del">Delete this habit</button>
+    </div>
+    <div class="sync">
+      <h3>GitHub sync</h3>
+      <p class="status" id="status">Not connected</p>
+      <div class="tools" id="syncform">
+        <label class="field"><span>Private repo (owner/name)</span><input id="repo" placeholder="karanpathakkp/streak-data" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+        <label class="field"><span>Fine-grained token (Contents: read and write)</span><input id="token" type="password" placeholder="github_pat_…" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+        <button class="tool" id="connect">Connect</button>
+      </div>
+      <div class="tools" id="synctools" hidden>
+        <button class="tool" id="syncnow">Sync now</button>
+        <button class="tool" id="edittoken">Change token or repo</button>
+        <button class="tool danger" id="disconnect">Disconnect</button>
+      </div>
+    </div>
+    <p class="privacy">Everything is saved on this iPhone and works with no internet. With GitHub sync on, every change is also committed as streak.json to your private repo, so the history survives a lost phone or cleared Safari data. The token stays only on this phone.</p>
+  </details>
+</main>
+
+<script>
+const KEY = 'streak-app-v1';
+const pad = n => String(n).padStart(2,'0');
+const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const today0 = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+
+function load(){
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.habits && s.habits.length) return s; } catch(e){}
+  return { habits:[{ id:'h'+Date.now(), name:'Workout', days:{} }], active:0 };
+}
+let state = load();
+let view = today0(); view.setDate(1);
+
+function save(){
+  state.updatedAt = Date.now();
+  try { localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch(e){ hint('Could not save. Storage may be full.'); }
+  sync.schedule();
+}
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+
+const habit = () => state.habits[state.active];
+function hint(t){ const h = document.getElementById('hint'); h.textContent = t; clearTimeout(hint.t); hint.t = setTimeout(()=>h.textContent='', 2500); }
+
+function streaks(days){
+  const t = today0();
+  let d = days[keyOf(t)] ? t : addDays(t,-1), cur = 0;
+  while (days[keyOf(d)]) { cur++; d = addDays(d,-1); }
+  const keys = Object.keys(days).filter(k=>days[k]).sort();
+  let best = 0, run = 0, prev = null;
+  for (const k of keys){
+    const [y,m,dd] = k.split('-').map(Number); const dt = new Date(y,m-1,dd);
+    run = (prev && keyOf(addDays(prev,1)) === k) ? run+1 : 1;
+    best = Math.max(best, run); prev = dt;
+  }
+  return { cur, best, total: keys.length };
+}
+
+function render(){
+  const hb = document.getElementById('habits'); hb.innerHTML = '';
+  state.habits.forEach((h,i)=>{
+    const b = document.createElement('button'); b.className='chip'; b.textContent=h.name;
+    b.setAttribute('aria-pressed', i===state.active);
+    b.onclick = ()=>{ state.active=i; save(); render(); };
+    hb.appendChild(b);
+  });
+  const add = document.createElement('button'); add.className='chip add'; add.textContent='+ New';
+  add.onclick = ()=>{ const n = (prompt('Name the new habit (e.g. Reading, No sugar)')||'').trim();
+    if(n){ state.habits.push({id:'h'+Date.now(),name:n.slice(0,30),days:{}}); state.active=state.habits.length-1; save(); render(); } };
+  hb.appendChild(add);
+
+  const h = habit(), s = streaks(h.days), doneToday = !!h.days[keyOf(today0())];
+  const c = document.getElementById('count'); c.textContent = s.cur; c.classList.toggle('alive', s.cur>0);
+  document.getElementById('unit').textContent = 'day streak';
+  document.getElementById('best').textContent = s.best;
+  document.getElementById('total').textContent = s.total;
+  const m = document.getElementById('mark');
+  m.classList.toggle('done', doneToday);
+  m.textContent = doneToday ? 'Done today ✓' : `Mark today done`;
+
+  const t = today0();
+  document.getElementById('month').textContent = view.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  document.getElementById('next').disabled = view.getFullYear()===t.getFullYear() && view.getMonth()===t.getMonth();
+  const g = document.getElementById('grid'); g.innerHTML='';
+  ['S','M','T','W','T','F','S'].forEach(x=>{ const e=document.createElement('div'); e.className='dow'; e.textContent=x; g.appendChild(e); });
+  for (let i=0;i<view.getDay();i++) g.appendChild(document.createElement('div'));
+  const dim = new Date(view.getFullYear(), view.getMonth()+1, 0).getDate();
+  for (let d=1; d<=dim; d++){
+    const dt = new Date(view.getFullYear(), view.getMonth(), d), k = keyOf(dt);
+    const b = document.createElement('button'); b.className='day'; b.textContent=d;
+    if (h.days[k]) b.classList.add('on');
+    if (k===keyOf(t)) b.classList.add('today');
+    if (dt > t) b.disabled = true;
+    b.setAttribute('aria-label', dt.toDateString() + (h.days[k] ? ', done' : ''));
+    b.onclick = ()=>toggle(k);
+    g.appendChild(b);
+  }
+}
+
+function toggle(k){
+  const h = habit();
+  if (h.days[k]) { delete h.days[k]; hint('Unmarked'); } else { h.days[k] = true; }
+  save(); render();
+}
+
+document.getElementById('mark').onclick = ()=>{
+  const k = keyOf(today0());
+  if (habit().days[k]) { if (!confirm('Unmark today?')) return; }
+  else if (navigator.vibrate) navigator.vibrate(15);
+  toggle(k);
+};
+document.getElementById('prev').onclick = ()=>{ view.setMonth(view.getMonth()-1); render(); };
+document.getElementById('next').onclick = ()=>{ view.setMonth(view.getMonth()+1); render(); };
+document.getElementById('rename').onclick = ()=>{
+  const n = (prompt('New name', habit().name)||'').trim(); if(n){ habit().name=n.slice(0,30); save(); render(); } };
+document.getElementById('del').onclick = ()=>{
+  if (!confirm(`Delete "${habit().name}" and all its history? This can't be undone.`)) return;
+  state.habits.splice(state.active,1);
+  if (!state.habits.length) state.habits.push({id:'h'+Date.now(),name:'Workout',days:{}});
+  state.active = 0; save(); render(); };
+document.getElementById('backup').onclick = async ()=>{
+  const txt = JSON.stringify(state);
+  try { await navigator.clipboard.writeText(txt); hint('Backup copied. Paste it into Notes.'); }
+  catch(e){ const b=document.getElementById('box'); b.hidden=false; b.value=txt; b.select(); hint('Copy the text in the box.'); }
+};
+document.getElementById('restore').onclick = ()=>{
+  const b = document.getElementById('box');
+  if (b.hidden || !b.value.trim()) { b.hidden=false; b.value=''; b.focus(); return; }
+  try {
+    const s = JSON.parse(b.value.trim());
+    if (!s.habits || !Array.isArray(s.habits)) throw 0;
+    if (!confirm('Replace current data with this backup?')) return;
+    state = s; state.active = 0; save(); b.hidden=true; b.value=''; render(); hint('Backup restored');
+  } catch(e){ hint("That text isn't a valid backup."); }
+};
+const SYNC_KEY = 'streak-app-sync';
+const sync = {
+  cfg: null, timer: null, busy: false,
+  load(){ try { this.cfg = JSON.parse(localStorage.getItem(SYNC_KEY)); } catch(e){ this.cfg = null; } return this; },
+  store(){ if (this.cfg) localStorage.setItem(SYNC_KEY, JSON.stringify(this.cfg)); else localStorage.removeItem(SYNC_KEY); },
+  url(){ return `https://api.github.com/repos/${this.cfg.repo}/contents/${this.cfg.path}`; },
+  headers(){ return { Authorization:`Bearer ${this.cfg.token}`, Accept:'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' }; },
+  status(t, cls){ const e = document.getElementById('status'); e.textContent = t; e.className = 'status' + (cls ? ' ' + cls : ''); },
+  ui(){
+    const on = !!(this.cfg && this.cfg.token && this.cfg.repo);
+    document.getElementById('syncform').hidden = on;
+    document.getElementById('synctools').hidden = !on;
+    if (!on) { this.status('Not connected'); return; }
+    if (this.cfg.pending) this.status(navigator.onLine ? 'Changes waiting to sync' : 'Offline. Will sync when back online');
+    else if (this.cfg.lastSync) this.status('Synced ' + new Date(this.cfg.lastSync).toLocaleString(), 'ok');
+    else this.status('Connected');
+  },
+  encode(obj){ return btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2)))); },
+  decode(b64){ return JSON.parse(decodeURIComponent(escape(atob(b64.replace(/\n/g, ''))))); },
+  async fetchRemote(){
+    const r = await fetch(this.url(), { headers: this.headers(), cache: 'no-store' });
+    if (r.status === 404) return null;
+    if (r.status === 401) throw new Error('Token rejected. Make a new one and reconnect.');
+    if (r.status === 403) throw new Error('Token has no access to that repo.');
+    if (!r.ok) throw new Error('GitHub error ' + r.status);
+    const j = await r.json();
+    return { sha: j.sha, data: this.decode(j.content) };
+  },
+  async push(){
+    if (!this.cfg || !this.cfg.token || this.busy) return;
+    if (!navigator.onLine) { this.cfg.pending = true; this.store(); this.ui(); return; }
+    this.busy = true; this.status('Syncing…');
+    try {
+      let sha = this.cfg.sha;
+      for (let attempt = 0; attempt < 2; attempt++){
+        const body = { message: 'Update streak ' + new Date().toISOString().slice(0,16).replace('T',' '), content: this.encode(state) };
+        if (sha) body.sha = sha;
+        const r = await fetch(this.url(), { method:'PUT', headers:{ ...this.headers(), 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+        if (r.ok) { const j = await r.json(); this.cfg.sha = j.content.sha; this.cfg.pending = false; this.cfg.lastSync = Date.now(); this.store(); this.ui(); return; }
+        if ((r.status === 409 || r.status === 422) && attempt === 0) { const cur = await this.fetchRemote(); sha = cur ? cur.sha : undefined; continue; }
+        if (r.status === 401) throw new Error('Token rejected. Make a new one and reconnect.');
+        if (r.status === 404) throw new Error('Repo not found. Check the name and token access.');
+        throw new Error('GitHub error ' + r.status);
+      }
+    } catch(e){ this.cfg.pending = true; this.store(); this.status(e.message || 'Sync failed', 'bad'); }
+    finally { this.busy = false; }
+  },
+  async pull(){
+    if (!this.cfg || !this.cfg.token || this.busy || !navigator.onLine) return;
+    this.busy = true;
+    try {
+      const remote = await this.fetchRemote();
+      this.busy = false;
+      if (!remote) { await this.push(); return; }
+      this.cfg.sha = remote.sha;
+      if (remote.data && Array.isArray(remote.data.habits) && (remote.data.updatedAt || 0) > (state.updatedAt || 0)) {
+        state = remote.data; localStorage.setItem(KEY, JSON.stringify(state)); render();
+      } else if ((state.updatedAt || 0) > (remote.data.updatedAt || 0) || this.cfg.pending) { await this.push(); return; }
+      this.cfg.pending = false; this.cfg.lastSync = Date.now(); this.store(); this.ui();
+    } catch(e){ this.status(e.message || 'Sync failed', 'bad'); }
+    finally { this.busy = false; }
+  },
+  schedule(){ if (!this.cfg || !this.cfg.token) return; this.cfg.pending = true; this.store(); this.ui(); clearTimeout(this.timer); this.timer = setTimeout(()=>this.push(), 1500); },
+  async connect(repo, token){
+    const trial = { repo, token, path:'streak.json' };
+    const prev = this.cfg; this.cfg = trial;
+    this.status('Checking…');
+    try {
+      const remote = await this.fetchRemote();
+      const hasLocal = state.habits.some(h => Object.keys(h.days).length);
+      if (remote && remote.data && Array.isArray(remote.data.habits)) {
+        this.cfg.sha = remote.sha;
+        const useRemote = !hasLocal || confirm(`Found history in GitHub from ${new Date(remote.data.updatedAt || 0).toLocaleString()}. Tap OK to use it, or Cancel to overwrite it with this phone's data.`);
+        if (useRemote) { state = remote.data; localStorage.setItem(KEY, JSON.stringify(state)); render(); this.cfg.lastSync = Date.now(); this.store(); this.ui(); hint('Connected and restored from GitHub'); return; }
+      }
+      this.store(); await this.push(); hint('Connected to GitHub');
+    } catch(e){ this.cfg = prev; this.store(); this.ui(); this.status(e.message || 'Could not connect', 'bad'); }
+  },
+};
+sync.load().ui();
+document.getElementById('connect').onclick = ()=>{
+  const repo = document.getElementById('repo').value.trim().replace(/^https:\/\/github\.com\//,'').replace(/\.git$/,'').replace(/\/$/,'');
+  const token = document.getElementById('token').value.trim();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { sync.status('Repo should look like owner/name', 'bad'); return; }
+  if (!token) { sync.status('Paste the token first', 'bad'); return; }
+  sync.connect(repo, token);
+};
+document.getElementById('syncnow').onclick = ()=>sync.pull();
+document.getElementById('edittoken').onclick = ()=>{
+  document.getElementById('repo').value = sync.cfg.repo; document.getElementById('token').value = '';
+  document.getElementById('syncform').hidden = false; document.getElementById('synctools').hidden = true;
+};
+document.getElementById('disconnect').onclick = ()=>{
+  if (!confirm('Disconnect GitHub? Your data stays on this phone and in the repo, it just stops syncing.')) return;
+  sync.cfg = null; sync.store(); sync.ui();
+};
+window.addEventListener('online', ()=>sync.pull());
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ render(); sync.pull(); } });
+sync.pull();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();
+</script>
+</body>
+</html>
