@@ -6,116 +6,188 @@
 <title>Streak</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Streak">
-<meta name="theme-color" content="#EEF2F7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#101828" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#158A62">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <style>
 :root{
-  --bg:#EEF2F7; --ink:#16223B; --muted:#6F7A90; --line:#D5DCE7;
-  --gold:#E8A317; --gold-soft:#F8E3B3; --card:#FFFFFF;
+  --green:#158A62; --navy:#0F1E38; --navy2:#16284A; --ink:#FFFFFF; --muted:#9AA8C2;
+  --gold:#F5B62E; --flame:#FF8A3D; --coral:#F26B6B; --card:rgba(255,255,255,.12);
   box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: dark){
-  :root{ --bg:#101828; --ink:#EEF2F7; --muted:#8C97AD; --line:#26324A;
-    --gold:#F0B429; --gold-soft:#3A3220; --card:#172238; }
 }
 *,*::before,*::after{box-sizing:inherit}
 [hidden]{display:none!important}
-html,body{margin:0;background:var(--bg);color:var(--ink)}
+html,body{margin:0;background:var(--navy);color:var(--ink);min-height:100%}
 body{
-  font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
-  -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none;
-  min-height:100%;
+  font-family:-apple-system,system-ui,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+  -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;
+  background:linear-gradient(180deg,#1A8F66 0%,#137A5C 22%,#0F4E4A 42%,#0F2A40 60%,#0F1E38 100%);
+  background-attachment:fixed;
 }
-main{max-width:460px;margin:0 auto;padding:12px 20px 32px}
-button{font:inherit;color:inherit;cursor:pointer}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
 button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+main{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 20px calc(env(safe-area-inset-bottom,0px) + 110px)}
 
-.habits{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.top{display:flex;align-items:center;justify-content:space-between;height:44px}
+.top h1{font-size:20px;font-weight:700;margin:0;text-align:center;flex:1}
+.icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff}
+.icon svg{width:26px;height:26px}
+
+.habits{display:flex;gap:8px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
 .habits::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:8px 16px;font-size:15px;font-weight:600;color:var(--muted)}
-.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chip{flex:none;border:1.5px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 14px;font-size:14px;font-weight:600;color:rgba(255,255,255,.85)}
+.chip[aria-pressed="true"]{background:#fff;border-color:#fff;color:var(--navy)}
 .chip.add{border-style:dashed}
 
-.hero{text-align:center;padding:28px 0 20px}
-.count{font-size:clamp(112px,38vw,168px);font-weight:800;line-height:.9;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-.count.alive{color:var(--gold)}
-.unit{font-size:19px;font-weight:600;margin-top:6px}
-.stats{display:flex;justify-content:center;gap:28px;margin-top:18px;color:var(--muted);font-size:14px}
-.stats b{display:block;color:var(--ink);font-size:20px}
+.quote{margin:12px 0 0;background:var(--card);border-radius:14px;padding:16px;text-align:center;font-size:16px;line-height:1.35;color:#fff;backdrop-filter:blur(6px)}
 
-.mark{display:block;width:100%;border:0;border-radius:20px;padding:20px;font-size:19px;font-weight:700;
-  background:var(--ink);color:var(--bg);transition:transform .12s, background .2s}
-.mark:active{transform:scale(.97)}
-.mark.done{background:var(--gold);color:#16223B}
-.hint{text-align:center;color:var(--muted);font-size:13px;margin:8px 0 0;min-height:18px}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:26px 0 14px}
+.num{display:flex;align-items:center;gap:8px}
+.count{font-size:clamp(76px,24vw,104px);font-weight:800;line-height:.9;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.fire{font-size:44px;line-height:1}
+.fire.off{filter:grayscale(1);opacity:.45}
+.unit{font-size:24px;font-weight:700;margin-top:8px}
+.stats{display:flex;gap:18px;margin-top:10px;color:var(--muted);font-size:13px}
+.stats b{display:block;color:#fff;font-size:17px}
+.mascot{width:150px;height:150px;flex:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.35))}
+.mascot.sleepy{opacity:.85}
 
-.cal{margin-top:28px;background:var(--card);border-radius:22px;padding:16px}
-.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.calhead h2{font-size:17px;margin:0}
-.nav{border:0;background:transparent;font-size:22px;width:40px;height:40px;border-radius:12px}
+.cal{margin-top:12px;background:rgba(15,30,56,.92);border-radius:24px 24px 0 0;padding:22px 16px 26px;min-height:420px}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.calhead h2{font-size:30px;font-weight:700;margin:0;letter-spacing:-.02em}
+.calhead div{display:flex;gap:4px}
+.nav{font-size:24px;width:44px;height:44px;border-radius:12px;color:#fff}
 .nav:disabled{opacity:.25}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
-.dow{font-size:12px;color:var(--muted);font-weight:600;padding-bottom:2px}
-.day{aspect-ratio:1;border:0;border-radius:50%;background:transparent;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;padding:0}
-.day.on{background:var(--gold);color:#16223B}
-.day.today{box-shadow:inset 0 0 0 2px var(--ink)}
-.day.on.today{box-shadow:inset 0 0 0 2px var(--ink)}
-.day:disabled{color:var(--line);cursor:default}
-.calnote{font-size:12px;color:var(--muted);margin:10px 0 0;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px 6px;text-align:center}
+.dow{font-size:14px;color:var(--muted);font-weight:700;padding-bottom:6px}
+.day{aspect-ratio:1;display:grid;place-items:center;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;color:#fff}
+.day span{width:78%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center}
+.day.on span{border:2px solid var(--gold);background:rgba(255,255,255,.08);font-size:20px}
+.day.today:not(.on) span{border:2px solid rgba(255,255,255,.8)}
+.day.live span{border:2px dashed var(--gold);animation:pulse 1.4s infinite}
+.day.future{color:rgba(255,255,255,.28)}
+@keyframes pulse{50%{opacity:.5}}
+.calnote{font-size:12px;color:var(--muted);margin:16px 0 0;text-align:center}
 
-details{margin-top:24px;color:var(--muted);font-size:15px}
-summary{cursor:pointer;padding:8px 0;font-weight:600}
-.tools{display:grid;gap:8px;padding-top:6px}
-.tool{border:1.5px solid var(--line);background:transparent;border-radius:14px;padding:12px;text-align:left;color:var(--ink)}
+.dock{position:fixed;left:0;right:0;bottom:0;padding:12px 20px calc(env(safe-area-inset-bottom,0px) + 14px);
+  background:linear-gradient(180deg,rgba(15,30,56,0),rgba(15,30,56,.95) 40%)}
+.dock > div{max-width:480px;margin:0 auto}
+.cta{display:block;width:100%;background:#fff;color:var(--coral);border-radius:14px;padding:18px;font-size:17px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;transition:transform .12s}
+.cta:active{transform:scale(.97)}
+.cta.live{color:var(--green)}
+.cta.done{color:var(--navy);background:var(--gold)}
+.sub{width:100%;text-align:center;font-size:13px;color:var(--muted);padding:10px 0 0;text-decoration:underline}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 100px);background:#fff;color:var(--navy);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+
+dialog{border:0;padding:0;background:transparent;max-width:none;width:100%;margin:auto 0 0;max-height:92vh}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.sheet{background:#fff;color:var(--navy);border-radius:24px 24px 0 0;padding:16px 20px calc(env(safe-area-inset-bottom,0px) + 20px);max-width:480px;margin:0 auto;max-height:92vh;overflow:auto;-webkit-user-select:text;user-select:text}
+.sheet h2{font-size:20px;margin:6px 0 14px}
+.sheet h3{font-size:15px;margin:18px 0 6px}
+.tools{display:grid;gap:8px}
+.tool{border:1.5px solid #D5DCE7;border-radius:14px;padding:12px;text-align:left;color:var(--navy);width:100%}
+.tool.primary{background:var(--navy);color:#fff;border-color:var(--navy);text-align:center;font-weight:700}
 .tool.danger{color:#C2412D}
-.privacy{font-size:13px;line-height:1.5;margin:14px 0 0}
-.sync{margin-top:18px;border-top:1.5px solid var(--line);padding-top:14px}
-.sync h3{font-size:15px;margin:0 0 4px;color:var(--ink)}
-.status{font-size:13px;margin:0 0 10px;min-height:18px}
+.field{display:block}
+.field span{display:block;font-size:12px;color:#6F7A90;margin-bottom:4px}
+input,textarea{width:100%;border-radius:12px;border:1.5px solid #D5DCE7;background:#fff;color:var(--navy);padding:11px;font:15px -apple-system,system-ui,sans-serif}
+textarea{min-height:90px;font:13px ui-monospace,monospace}
+.modes{display:grid;gap:8px;margin:8px 0 14px}
+.mode{border:1.5px solid #D5DCE7;border-radius:14px;padding:12px;text-align:left;display:flex;gap:10px;align-items:flex-start}
+.mode[aria-pressed="true"]{border-color:var(--navy);background:#EEF2F7}
+.mode b{display:block;font-size:15px}
+.mode small{color:#6F7A90;font-size:12px;line-height:1.4}
+.status{font-size:13px;margin:0 0 10px;min-height:18px;color:#6F7A90}
 .status.ok{color:#2E7D4F}
 .status.bad{color:#C2412D}
-.field{display:block}
-.field span{display:block;font-size:12px;margin-bottom:4px}
-input{width:100%;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:10px;font:14px ui-monospace,monospace;-webkit-user-select:text;user-select:text}
-textarea{width:100%;min-height:90px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:10px;font:13px ui-monospace,monospace;-webkit-user-select:text;user-select:text}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.privacy{font-size:12px;line-height:1.5;color:#6F7A90;margin:14px 0 0}
+.close{position:absolute;right:16px;top:12px;font-size:26px;color:#6F7A90;width:36px;height:36px}
+.sheet{position:relative}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 <main>
+  <div class="top">
+    <span class="icon"></span>
+    <h1>My Streak</h1>
+    <button class="icon" id="open-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.5" stroke-linecap="round"/></svg></button>
+  </div>
   <nav class="habits" id="habits" aria-label="Habits"></nav>
+  <div class="quote" id="quote"></div>
 
   <section class="hero">
-    <div class="count" id="count">0</div>
-    <div class="unit" id="unit">day streak</div>
-    <div class="stats">
-      <div><b id="best">0</b>best</div>
-      <div><b id="total">0</b>days total</div>
+    <div>
+      <div class="num"><span class="count" id="count">0</span><span class="fire" id="fire">🔥</span></div>
+      <div class="unit">days streak</div>
+      <div class="stats">
+        <div><b id="best">0</b>best</div>
+        <div><b id="total">0</b>days total</div>
+        <div id="minswrap"><b id="mins">0</b>min today</div>
+      </div>
     </div>
+    <svg class="mascot" id="mascot" viewBox="0 0 200 200" aria-hidden="true">
+      <defs><radialGradient id="fur" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#9B7BFF"/><stop offset="1" stop-color="#5A3BC9"/></radialGradient></defs>
+      <g id="mgroup">
+        <ellipse cx="100" cy="185" rx="48" ry="8" fill="rgba(0,0,0,.25)"/>
+        <path d="M60 150 q-18 30 6 32 q14 2 18 -14z" fill="#6E4FE0"/>
+        <path d="M140 150 q18 30 -6 32 q-14 2 -18 -14z" fill="#6E4FE0"/>
+        <path d="M100 30 C40 30 26 100 40 145 C50 175 150 175 160 145 C174 100 160 30 100 30z" fill="url(#fur)"/>
+        <g stroke="#5A3BC9" stroke-width="3" stroke-linecap="round" fill="none" opacity=".6">
+          <path d="M48 60 l-10 -8M46 80 l-12 -3M154 60 l10 -8M156 80 l12 -3M96 28 l2 -12M108 28 l4 -12M86 30 l-3 -11"/>
+        </g>
+        <circle cx="78" cy="88" r="16" fill="#fff"/><circle cx="122" cy="88" r="16" fill="#fff"/>
+        <circle cx="81" cy="90" r="9" fill="#2A6BFF"/><circle cx="119" cy="90" r="9" fill="#2A6BFF"/>
+        <circle cx="83" cy="87" r="4" fill="#0B1D4A"/><circle cx="121" cy="87" r="4" fill="#0B1D4A"/>
+        <circle cx="85" cy="85" r="1.8" fill="#fff"/><circle cx="123" cy="85" r="1.8" fill="#fff"/>
+        <path id="mouth" d="M78 118 q22 26 44 0 q-22 10 -44 0z" fill="#3A1C6E"/>
+        <path d="M84 121 q16 10 32 0 q-16 5 -32 0z" fill="#E96A8A"/>
+        <ellipse cx="60" cy="140" rx="12" ry="10" fill="#8B6CF5"/><ellipse cx="140" cy="140" rx="12" ry="10" fill="#8B6CF5"/>
+      </g>
+    </svg>
   </section>
-
-  <button class="mark" id="mark">Mark today done</button>
-  <p class="hint" id="hint"></p>
 
   <section class="cal" aria-label="Calendar">
     <div class="calhead">
-      <button class="nav" id="prev" aria-label="Previous month">‹</button>
       <h2 id="month"></h2>
-      <button class="nav" id="next" aria-label="Next month">›</button>
+      <div>
+        <button class="nav" id="prev" aria-label="Previous month">‹</button>
+        <button class="nav" id="next" aria-label="Next month">›</button>
+      </div>
     </div>
     <div class="grid" id="grid"></div>
-    <p class="calnote">Tap a past day to fix a missed check-in.</p>
+    <p class="calnote" id="calnote"></p>
   </section>
+</main>
 
-  <details>
-    <summary>Settings and backup</summary>
+<div class="dock"><div>
+  <button class="cta" id="cta">Check in</button>
+  <button class="sub" id="cancel" hidden>Cancel this check-in</button>
+</div></div>
+<div class="toast" id="hint" role="status"></div>
+
+<dialog id="new-sheet">
+  <form method="dialog" class="sheet">
+    <button class="close" type="button" data-close aria-label="Close">×</button>
+    <h2>New habit</h2>
+    <label class="field"><span>Name</span><input id="new-name" maxlength="30" placeholder="Study, Workout, Walk…" autocomplete="off"></label>
+    <h3>How do you want to track it?</h3>
+    <div class="modes">
+      <button type="button" class="mode" data-mode="timer" aria-pressed="true"><span>⏱️</span><span><b>Check in / check out</b><small>Tap Check in when you start and Check out when you finish. Checking out marks the day done and records how long it took. Nothing can be edited afterwards.</small></span></button>
+      <button type="button" class="mode" data-mode="tap" aria-pressed="false"><span>✅</span><span><b>One tap</b><small>A single tap marks today done. Good for things without a duration, like "no sugar".</small></span></button>
+    </div>
+    <button class="tool primary" id="new-create" type="button">Create</button>
+  </form>
+</dialog>
+
+<dialog id="settings-sheet">
+  <div class="sheet">
+    <button class="close" type="button" data-close aria-label="Close">×</button>
+    <h2 id="settings-title">Settings</h2>
     <div class="tools">
       <button class="tool" id="rename">Rename this habit</button>
       <button class="tool" id="backup">Copy backup</button>
@@ -123,23 +195,21 @@ textarea{width:100%;min-height:90px;border-radius:12px;border:1.5px solid var(--
       <textarea id="box" hidden placeholder="Paste your backup here, then tap Restore again"></textarea>
       <button class="tool danger" id="del">Delete this habit</button>
     </div>
-    <div class="sync">
-      <h3>GitHub sync</h3>
-      <p class="status" id="status">Not connected</p>
-      <div class="tools" id="syncform">
-        <label class="field"><span>Private repo (owner/name)</span><input id="repo" placeholder="karanpathakkp/streak-data" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
-        <label class="field"><span>Fine-grained token (Contents: read and write)</span><input id="token" type="password" placeholder="github_pat_…" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
-        <button class="tool" id="connect">Connect</button>
-      </div>
-      <div class="tools" id="synctools" hidden>
-        <button class="tool" id="syncnow">Sync now</button>
-        <button class="tool" id="edittoken">Change token or repo</button>
-        <button class="tool danger" id="disconnect">Disconnect</button>
-      </div>
+    <h3>GitHub sync</h3>
+    <p class="status" id="status">Not connected</p>
+    <div class="tools" id="syncform">
+      <label class="field"><span>Private repo (owner/name)</span><input id="repo" placeholder="karanpathakkp/streak-data" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+      <label class="field"><span>Fine-grained token (Contents: read and write)</span><input id="token" type="password" placeholder="github_pat_…" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+      <button class="tool" id="connect">Connect</button>
     </div>
-    <p class="privacy">Everything is saved on this iPhone and works with no internet. With GitHub sync on, every change is also committed as streak.json to your private repo, so the history survives a lost phone or cleared Safari data. The token stays only on this phone.</p>
-  </details>
-</main>
+    <div class="tools" id="synctools" hidden>
+      <button class="tool" id="syncnow">Sync now</button>
+      <button class="tool" id="edittoken">Change token or repo</button>
+      <button class="tool danger" id="disconnect">Disconnect</button>
+    </div>
+    <p class="privacy">Everything is saved on this iPhone and works with no internet. With GitHub sync on, every change is also committed as streak.json to your private repo, including check-in, check-out and duration for each day. The token stays only on this phone.</p>
+  </div>
+</dialog>
 
 <script>
 const KEY = 'streak-app-v1';
@@ -147,10 +217,19 @@ const pad = n => String(n).padStart(2,'0');
 const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
 const today0 = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const $ = id => document.getElementById(id);
 
+function normalize(s){
+  s.habits.forEach(h => {
+    if (!h.mode) h.mode = 'tap';
+    for (const k in h.days){ const v = h.days[k]; if (v === true) h.days[k] = { done:true }; else if (!v) delete h.days[k]; }
+  });
+  if (typeof s.active !== 'number' || s.active >= s.habits.length) s.active = 0;
+  return s;
+}
 function load(){
-  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.habits && s.habits.length) return s; } catch(e){}
-  return { habits:[{ id:'h'+Date.now(), name:'Workout', days:{} }], active:0 };
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.habits && s.habits.length) return normalize(s); } catch(e){}
+  return { habits:[{ id:'h'+Date.now(), name:'Workout', mode:'timer', days:{} }], active:0 };
 }
 let state = load();
 let view = today0(); view.setDate(1);
@@ -164,7 +243,9 @@ function save(){
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 
 const habit = () => state.habits[state.active];
-function hint(t){ const h = document.getElementById('hint'); h.textContent = t; clearTimeout(hint.t); hint.t = setTimeout(()=>h.textContent='', 2500); }
+function hint(t){ const h = $('hint'); h.textContent = t; h.classList.add('show'); clearTimeout(hint.t); hint.t = setTimeout(()=>h.classList.remove('show'), 2500); }
+const fmtClock = ms => { const s = Math.max(0, Math.floor(ms/1000)); return `${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`; };
+const fmtMins = m => m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m} min`;
 
 function streaks(days){
   const t = today0();
@@ -180,83 +261,156 @@ function streaks(days){
   return { cur, best, total: keys.length };
 }
 
+const QUOTES = {
+  idle: ['Check in when you start. Your future self is watching.', 'One session today keeps the flame alive.', 'Start small. Start now.'],
+  live: ['You showed up. Now finish strong.', 'Clock is running. Make it count.', 'Every minute here is a minute earned.'],
+  done: ['You came. You sweat. You conquered!', 'Day done. Flame kept.', 'Consistency looks good on you.'],
+  tap: ['One tap and today is yours.', 'Small wins, stacked daily.', 'Do the thing. Then tap.'],
+};
+function quote(kind){ const q = QUOTES[kind]; return q[today0().getDate() % q.length]; }
+
 function render(){
-  const hb = document.getElementById('habits'); hb.innerHTML = '';
+  const hb = $('habits'); hb.innerHTML = '';
   state.habits.forEach((h,i)=>{
-    const b = document.createElement('button'); b.className='chip'; b.textContent=h.name;
+    const b = document.createElement('button'); b.className='chip';
+    b.textContent = (h.mode === 'timer' ? '⏱ ' : '') + h.name;
     b.setAttribute('aria-pressed', i===state.active);
     b.onclick = ()=>{ state.active=i; save(); render(); };
     hb.appendChild(b);
   });
   const add = document.createElement('button'); add.className='chip add'; add.textContent='+ New';
-  add.onclick = ()=>{ const n = (prompt('Name the new habit (e.g. Reading, No sugar)')||'').trim();
-    if(n){ state.habits.push({id:'h'+Date.now(),name:n.slice(0,30),days:{}}); state.active=state.habits.length-1; save(); render(); } };
+  add.onclick = openNew;
   hb.appendChild(add);
 
-  const h = habit(), s = streaks(h.days), doneToday = !!h.days[keyOf(today0())];
-  const c = document.getElementById('count'); c.textContent = s.cur; c.classList.toggle('alive', s.cur>0);
-  document.getElementById('unit').textContent = 'day streak';
-  document.getElementById('best').textContent = s.best;
-  document.getElementById('total').textContent = s.total;
-  const m = document.getElementById('mark');
-  m.classList.toggle('done', doneToday);
-  m.textContent = doneToday ? 'Done today ✓' : `Mark today done`;
+  const h = habit(), s = streaks(h.days), tk = keyOf(today0()), today = h.days[tk], live = !!h.session;
+  $('count').textContent = s.cur;
+  $('fire').classList.toggle('off', s.cur === 0);
+  $('best').textContent = s.best;
+  $('total').textContent = s.total;
+  $('minswrap').hidden = h.mode !== 'timer';
+  $('mins').textContent = (today && today.mins) || 0;
+  $('mascot').classList.toggle('sleepy', !today && !live);
+  $('mouth').setAttribute('d', today || live ? 'M78 118 q22 26 44 0 q-22 10 -44 0z' : 'M82 120 q18 8 36 0 q-18 4 -36 0z');
+
+  const cta = $('cta'), cancel = $('cancel');
+  cta.className = 'cta';
+  cancel.hidden = !live;
+  if (h.mode === 'timer'){
+    if (live){ cta.classList.add('live'); tick(); $('quote').textContent = quote('live'); }
+    else if (today){ cta.classList.add('done'); cta.textContent = `Done today · ${fmtMins(today.mins||0)}`; $('quote').textContent = quote('done'); }
+    else { cta.textContent = 'Check in'; $('quote').textContent = quote('idle'); }
+  } else {
+    if (today){ cta.classList.add('done'); cta.textContent = 'Done today ✓'; $('quote').textContent = quote('done'); }
+    else { cta.textContent = 'Mark today done'; $('quote').textContent = quote('tap'); }
+  }
+  $('calnote').textContent = h.mode === 'timer' ? 'Days are marked only by checking out. History cannot be edited.' : 'Days are marked only from today. History cannot be edited.';
 
   const t = today0();
-  document.getElementById('month').textContent = view.toLocaleDateString(undefined,{month:'long',year:'numeric'});
-  document.getElementById('next').disabled = view.getFullYear()===t.getFullYear() && view.getMonth()===t.getMonth();
-  const g = document.getElementById('grid'); g.innerHTML='';
-  ['S','M','T','W','T','F','S'].forEach(x=>{ const e=document.createElement('div'); e.className='dow'; e.textContent=x; g.appendChild(e); });
-  for (let i=0;i<view.getDay();i++) g.appendChild(document.createElement('div'));
+  $('month').textContent = view.toLocaleDateString(undefined,{month:'long'}) + (view.getFullYear()!==t.getFullYear() ? ' ' + view.getFullYear() : '');
+  $('next').disabled = view.getFullYear()===t.getFullYear() && view.getMonth()===t.getMonth();
+  const g = $('grid'); g.innerHTML='';
+  ['M','T','W','T','F','S','S'].forEach(x=>{ const e=document.createElement('div'); e.className='dow'; e.textContent=x; g.appendChild(e); });
+  for (let i=0;i<(view.getDay()+6)%7;i++) g.appendChild(document.createElement('div'));
   const dim = new Date(view.getFullYear(), view.getMonth()+1, 0).getDate();
   for (let d=1; d<=dim; d++){
-    const dt = new Date(view.getFullYear(), view.getMonth(), d), k = keyOf(dt);
-    const b = document.createElement('button'); b.className='day'; b.textContent=d;
-    if (h.days[k]) b.classList.add('on');
-    if (k===keyOf(t)) b.classList.add('today');
-    if (dt > t) b.disabled = true;
-    b.setAttribute('aria-label', dt.toDateString() + (h.days[k] ? ', done' : ''));
-    b.onclick = ()=>toggle(k);
-    g.appendChild(b);
+    const dt = new Date(view.getFullYear(), view.getMonth(), d), k = keyOf(dt), rec = h.days[k];
+    const cell = document.createElement('div'); cell.className='day';
+    const inner = document.createElement('span'); inner.textContent = rec ? '🔥' : d;
+    if (rec) cell.classList.add('on');
+    if (k===tk) cell.classList.add('today');
+    if (k===tk && live && !rec) cell.classList.add('live');
+    if (dt > t) cell.classList.add('future');
+    let label = dt.toDateString();
+    if (rec) label += rec.mins ? `, done, ${fmtMins(rec.mins)}` : ', done';
+    cell.title = label; cell.setAttribute('aria-label', label);
+    cell.appendChild(inner); g.appendChild(cell);
   }
 }
 
-function toggle(k){
-  const h = habit();
-  if (h.days[k]) { delete h.days[k]; hint('Unmarked'); } else { h.days[k] = true; }
-  save(); render();
+let tickTimer = null;
+function tick(){
+  clearInterval(tickTimer);
+  const run = ()=>{ const h = habit(); if (!h.session){ clearInterval(tickTimer); return; } $('cta').textContent = `Check out · ${fmtClock(Date.now()-h.session.in)}`; };
+  run(); tickTimer = setInterval(run, 1000);
 }
 
-document.getElementById('mark').onclick = ()=>{
-  const k = keyOf(today0());
-  if (habit().days[k]) { if (!confirm('Unmark today?')) return; }
-  else if (navigator.vibrate) navigator.vibrate(15);
-  toggle(k);
+function checkIn(){
+  const h = habit(); if (h.session) return;
+  h.session = { in: Date.now() };
+  if (navigator.vibrate) navigator.vibrate(15);
+  save(); render(); hint('Checked in. Tap Check out when you finish.');
+}
+function checkOut(){
+  const h = habit(); if (!h.session) return;
+  const now = Date.now(), mins = Math.max(1, Math.round((now - h.session.in)/60000));
+  if (!confirm(`Check out now and mark today done? ${fmtMins(mins)} recorded.`)) return;
+  const k = keyOf(new Date(h.session.in));
+  const rec = h.days[k] || { done:true, mins:0, sessions:[] };
+  rec.done = true; rec.mins = (rec.mins||0) + mins; rec.sessions = rec.sessions || [];
+  rec.sessions.push({ in: h.session.in, out: now, mins });
+  h.days[k] = rec; delete h.session;
+  if (navigator.vibrate) navigator.vibrate([15,40,15]);
+  save(); render(); hint(`Day done. ${fmtMins(rec.mins)} today.`);
+}
+
+$('cta').onclick = ()=>{
+  const h = habit(), tk = keyOf(today0());
+  if (h.mode === 'timer'){
+    if (h.session) return checkOut();
+    if (h.days[tk]) { if (confirm('Today is already done. Check in for another session?')) checkIn(); return; }
+    return checkIn();
+  }
+  if (h.days[tk]) { hint('Today is already done.'); return; }
+  h.days[tk] = { done:true, at: Date.now() };
+  if (navigator.vibrate) navigator.vibrate(15);
+  save(); render(); hint('Day done.');
 };
-document.getElementById('prev').onclick = ()=>{ view.setMonth(view.getMonth()-1); render(); };
-document.getElementById('next').onclick = ()=>{ view.setMonth(view.getMonth()+1); render(); };
-document.getElementById('rename').onclick = ()=>{
-  const n = (prompt('New name', habit().name)||'').trim(); if(n){ habit().name=n.slice(0,30); save(); render(); } };
-document.getElementById('del').onclick = ()=>{
+$('cancel').onclick = ()=>{
+  if (!confirm('Cancel this check-in? Nothing will be recorded.')) return;
+  delete habit().session; save(); render(); hint('Check-in cancelled.');
+};
+$('prev').onclick = ()=>{ view.setMonth(view.getMonth()-1); render(); };
+$('next').onclick = ()=>{ view.setMonth(view.getMonth()+1); render(); };
+
+let newMode = 'timer';
+function openNew(){
+  $('new-name').value = ''; newMode = 'timer';
+  document.querySelectorAll('.mode').forEach(m => m.setAttribute('aria-pressed', m.dataset.mode === newMode));
+  $('new-sheet').showModal();
+}
+document.querySelectorAll('.mode').forEach(m => m.onclick = ()=>{ newMode = m.dataset.mode; document.querySelectorAll('.mode').forEach(x => x.setAttribute('aria-pressed', x === m)); });
+$('new-create').onclick = ()=>{
+  const n = $('new-name').value.trim(); if (!n) { $('new-name').focus(); return; }
+  state.habits.push({ id:'h'+Date.now(), name:n.slice(0,30), mode:newMode, days:{} });
+  state.active = state.habits.length-1; save(); render(); $('new-sheet').close();
+};
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = ()=>b.closest('dialog').close());
+document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+
+$('open-settings').onclick = ()=>{ $('settings-title').textContent = `Settings · ${habit().name}`; $('settings-sheet').showModal(); };
+$('rename').onclick = ()=>{
+  const n = (prompt('New name', habit().name)||'').trim(); if(n){ habit().name=n.slice(0,30); save(); render(); $('settings-title').textContent = `Settings · ${n}`; } };
+$('del').onclick = ()=>{
   if (!confirm(`Delete "${habit().name}" and all its history? This can't be undone.`)) return;
   state.habits.splice(state.active,1);
-  if (!state.habits.length) state.habits.push({id:'h'+Date.now(),name:'Workout',days:{}});
-  state.active = 0; save(); render(); };
-document.getElementById('backup').onclick = async ()=>{
+  if (!state.habits.length) state.habits.push({id:'h'+Date.now(),name:'Workout',mode:'timer',days:{}});
+  state.active = 0; save(); render(); $('settings-sheet').close(); };
+$('backup').onclick = async ()=>{
   const txt = JSON.stringify(state);
   try { await navigator.clipboard.writeText(txt); hint('Backup copied. Paste it into Notes.'); }
-  catch(e){ const b=document.getElementById('box'); b.hidden=false; b.value=txt; b.select(); hint('Copy the text in the box.'); }
+  catch(e){ const b=$('box'); b.hidden=false; b.value=txt; b.select(); hint('Copy the text in the box.'); }
 };
-document.getElementById('restore').onclick = ()=>{
-  const b = document.getElementById('box');
+$('restore').onclick = ()=>{
+  const b = $('box');
   if (b.hidden || !b.value.trim()) { b.hidden=false; b.value=''; b.focus(); return; }
   try {
     const s = JSON.parse(b.value.trim());
     if (!s.habits || !Array.isArray(s.habits)) throw 0;
     if (!confirm('Replace current data with this backup?')) return;
-    state = s; state.active = 0; save(); b.hidden=true; b.value=''; render(); hint('Backup restored');
+    state = normalize(s); state.active = 0; save(); b.hidden=true; b.value=''; render(); hint('Backup restored');
   } catch(e){ hint("That text isn't a valid backup."); }
 };
+
 const SYNC_KEY = 'streak-app-sync';
 const sync = {
   cfg: null, timer: null, busy: false,
@@ -313,7 +467,7 @@ const sync = {
       if (!remote) { await this.push(); return; }
       this.cfg.sha = remote.sha;
       if (remote.data && Array.isArray(remote.data.habits) && (remote.data.updatedAt || 0) > (state.updatedAt || 0)) {
-        state = remote.data; localStorage.setItem(KEY, JSON.stringify(state)); render();
+        state = normalize(remote.data); localStorage.setItem(KEY, JSON.stringify(state)); render();
       } else if ((state.updatedAt || 0) > (remote.data.updatedAt || 0) || this.cfg.pending) { await this.push(); return; }
       this.cfg.pending = false; this.cfg.lastSync = Date.now(); this.store(); this.ui();
     } catch(e){ this.status(e.message || 'Sync failed', 'bad'); }
@@ -330,26 +484,23 @@ const sync = {
       if (remote && remote.data && Array.isArray(remote.data.habits)) {
         this.cfg.sha = remote.sha;
         const useRemote = !hasLocal || confirm(`Found history in GitHub from ${new Date(remote.data.updatedAt || 0).toLocaleString()}. Tap OK to use it, or Cancel to overwrite it with this phone's data.`);
-        if (useRemote) { state = remote.data; localStorage.setItem(KEY, JSON.stringify(state)); render(); this.cfg.lastSync = Date.now(); this.store(); this.ui(); hint('Connected and restored from GitHub'); return; }
+        if (useRemote) { state = normalize(remote.data); localStorage.setItem(KEY, JSON.stringify(state)); render(); this.cfg.lastSync = Date.now(); this.store(); this.ui(); hint('Connected and restored from GitHub'); return; }
       }
       this.store(); await this.push(); hint('Connected to GitHub');
     } catch(e){ this.cfg = prev; this.store(); this.ui(); this.status(e.message || 'Could not connect', 'bad'); }
   },
 };
 sync.load().ui();
-document.getElementById('connect').onclick = ()=>{
-  const repo = document.getElementById('repo').value.trim().replace(/^https:\/\/github\.com\//,'').replace(/\.git$/,'').replace(/\/$/,'');
-  const token = document.getElementById('token').value.trim();
+$('connect').onclick = ()=>{
+  const repo = $('repo').value.trim().replace(/^https:\/\/github\.com\//,'').replace(/\.git$/,'').replace(/\/$/,'');
+  const token = $('token').value.trim();
   if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { sync.status('Repo should look like owner/name', 'bad'); return; }
   if (!token) { sync.status('Paste the token first', 'bad'); return; }
   sync.connect(repo, token);
 };
-document.getElementById('syncnow').onclick = ()=>sync.pull();
-document.getElementById('edittoken').onclick = ()=>{
-  document.getElementById('repo').value = sync.cfg.repo; document.getElementById('token').value = '';
-  document.getElementById('syncform').hidden = false; document.getElementById('synctools').hidden = true;
-};
-document.getElementById('disconnect').onclick = ()=>{
+$('syncnow').onclick = ()=>sync.pull();
+$('edittoken').onclick = ()=>{ $('repo').value = sync.cfg.repo; $('token').value = ''; $('syncform').hidden = false; $('synctools').hidden = true; };
+$('disconnect').onclick = ()=>{
   if (!confirm('Disconnect GitHub? Your data stays on this phone and in the repo, it just stops syncing.')) return;
   sync.cfg = null; sync.store(); sync.ui();
 };
