@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Streak</title>
+<title>Go</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Streak">
+<meta name="apple-mobile-web-app-title" content="Go">
 <meta name="theme-color" content="#158A62">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="manifest.json">
 <style>
 :root{
@@ -108,6 +108,13 @@ textarea{min-height:90px;font:13px ui-monospace,monospace}
 .status.ok{color:#2E7D4F}
 .status.bad{color:#C2412D}
 .privacy{font-size:12px;line-height:1.5;color:#6F7A90;margin:14px 0 0}
+.gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.gallery figure{margin:0;background:linear-gradient(180deg,#137A5C,#0F1E38);border-radius:12px;padding:6px;text-align:center}
+.gallery img{width:100%;aspect-ratio:1;object-fit:contain}
+.gallery figcaption{font-size:11px;color:#C9D3E6;margin-top:2px}
+.iconrow{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+.iconrow img{width:64px;height:64px;border-radius:14px;background:#EEF2F7;object-fit:cover}
+.steps{font-size:13px;line-height:1.5;color:#6F7A90;margin:6px 0 0;padding-left:18px}
 .close{position:absolute;right:16px;top:12px;font-size:26px;color:#6F7A90;width:36px;height:36px}
 .sheet{position:relative}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
@@ -117,7 +124,7 @@ textarea{min-height:90px;font:13px ui-monospace,monospace}
 <main>
   <div class="top">
     <span class="icon"></span>
-    <h1>My Streak</h1>
+    <h1>Go</h1>
     <button class="icon" id="open-settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.5" stroke-linecap="round"/></svg></button>
   </div>
   <nav class="habits" id="habits" aria-label="Habits"></nav>
@@ -194,6 +201,27 @@ textarea{min-height:90px;font:13px ui-monospace,monospace}
       <button class="tool danger" id="disconnect">Disconnect</button>
     </div>
     <p class="privacy">Everything is saved on this iPhone and works with no internet. With GitHub sync on, every change is also committed as streak.json to your private repo, including check-in, check-out and duration for each day. The token stays only on this phone.</p>
+
+    <h3>App icon</h3>
+    <div class="iconrow"><img id="icon-preview" src="apple-touch-icon.png?v=2" alt=""><label class="tool" style="flex:1;text-align:center">Choose an image<input id="icon-file" type="file" accept="image/*" hidden></label></div>
+    <label class="field"><span>App repo (where the icon files live)</span><input id="apprepo" value="karanpathakkp/streak" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+    <button class="tool primary" id="icon-publish" disabled style="margin-top:8px">Publish as app icon</button>
+    <p class="status" id="icon-status"></p>
+    <p class="privacy">iPhone reads the icon only when you add the app to the home screen, so a new icon has to be published to the app repo first. Your GitHub token needs access to that repo as well. After publishing, wait a minute, delete the old home-screen icon and add it again.</p>
+
+    <h3>iPhone widget</h3>
+    <button class="tool" id="copy-widget">Copy widget script</button>
+    <ol class="steps">
+      <li>Install the free Scriptable app from the App Store.</li>
+      <li>Tap + in Scriptable, paste the script, name it Go.</li>
+      <li>Run it once and paste your GitHub token when asked.</li>
+      <li>Long-press the home screen, add a Scriptable widget, choose Go.</li>
+    </ol>
+
+    <h3>Lazy · before check-out</h3>
+    <div class="gallery" id="gallery-lazy"></div>
+    <h3>Energetic · after check-out</h3>
+    <div class="gallery" id="gallery-active"></div>
   </div>
 </dialog>
 
@@ -422,6 +450,63 @@ document.querySelectorAll('[data-close]').forEach(b => b.onclick = ()=>b.closest
 document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
 
 $('open-settings').onclick = ()=>{ $('settings-title').textContent = `Settings · ${habit().name}`; $('settings-sheet').showModal(); };
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+for (const kind of ['lazy','active']){
+  const g = $('gallery-' + kind);
+  DAYS.forEach((d,i)=>{ const f = document.createElement('figure'); const im = document.createElement('img'); im.src = `img/${kind}-${i}.png`; im.alt = ''; im.loading = 'lazy';
+    const c = document.createElement('figcaption'); c.textContent = d.slice(0,3); f.append(im, c); g.appendChild(f); });
+}
+
+const ICON_SIZES = [[512,'icon-512.png'],[192,'icon-192.png'],[180,'apple-touch-icon.png']];
+let iconSource = null;
+function squareIcon(img, size){
+  const c = document.createElement('canvas'); c.width = c.height = size; const x = c.getContext('2d');
+  const side = Math.min(img.naturalWidth, img.naturalHeight);
+  x.fillStyle = '#0F1E38'; x.fillRect(0,0,size,size);
+  x.drawImage(img, (img.naturalWidth-side)/2, (img.naturalHeight-side)/2, side, side, 0, 0, size, size);
+  return c;
+}
+$('icon-file').onchange = ()=>{
+  const f = $('icon-file').files[0]; if (!f) return;
+  const url = URL.createObjectURL(f); const img = new Image();
+  img.onload = ()=>{ iconSource = img; $('icon-preview').src = squareIcon(img, 180).toDataURL('image/png'); $('icon-publish').disabled = false; $('icon-status').textContent = 'Preview ready. Tap Publish to make it the app icon.'; $('icon-status').className = 'status'; URL.revokeObjectURL(url); };
+  img.src = url;
+};
+$('icon-publish').onclick = async ()=>{
+  if (!iconSource) return;
+  if (!sync.cfg || !sync.cfg.token) { $('icon-status').textContent = 'Connect GitHub sync first. The token must also have access to the app repo.'; $('icon-status').className = 'status bad'; return; }
+  const repo = $('apprepo').value.trim();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { $('icon-status').textContent = 'App repo should look like owner/name'; $('icon-status').className = 'status bad'; return; }
+  if (!confirm(`Publish this image as the app icon in ${repo}? The current icon files will be replaced.`)) return;
+  $('icon-publish').disabled = true; $('icon-status').className = 'status';
+  try {
+    const probe = await fetch(`https://api.github.com/repos/${repo}`, { headers: sync.headers(), cache:'no-store' });
+    if (!probe.ok) throw new Error('Token has no access to ' + repo + '. Edit the token on GitHub and add that repo.');
+    for (const [size, name] of ICON_SIZES){
+      $('icon-status').textContent = `Uploading ${name}…`;
+      const content = squareIcon(iconSource, size).toDataURL('image/png').split(',')[1];
+      const url = `https://api.github.com/repos/${repo}/contents/${name}`;
+      const cur = await fetch(url, { headers: sync.headers(), cache:'no-store' });
+      if (!cur.ok && cur.status !== 404) throw new Error('GitHub error ' + cur.status);
+      const sha = cur.ok ? (await cur.json()).sha : undefined;
+      const body = { message: 'Update app icon', content }; if (sha) body.sha = sha;
+      const r = await fetch(url, { method:'PUT', headers:{ ...sync.headers(), 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+      if (!r.ok) throw new Error('GitHub error ' + r.status);
+    }
+    const ks = await caches.keys(); for (const k of ks){ const c = await caches.open(k); for (const [,name] of ICON_SIZES) await c.delete('./' + name, { ignoreSearch:true }); }
+    $('icon-status').textContent = 'Published. Wait a minute, then delete the home-screen icon and add the app again.'; $('icon-status').className = 'status ok';
+  } catch(e){ $('icon-status').textContent = e.message || 'Upload failed'; $('icon-status').className = 'status bad'; }
+  $('icon-publish').disabled = false;
+};
+$('copy-widget').onclick = async ()=>{
+  try {
+    const txt = await (await fetch('widget.js')).text();
+    await navigator.clipboard.writeText(txt); hint('Widget script copied. Paste it into Scriptable.');
+  } catch(e){
+    try { const b = $('box'); b.hidden = false; b.value = await (await fetch('widget.js')).text(); b.select(); hint('Copy the script from the box above.'); }
+    catch(e2){ hint('Could not load the script. Open widget.js in the app repo instead.'); }
+  }
+};
 $('rename').onclick = ()=>{
   const n = (prompt('New name', habit().name)||'').trim(); if(n){ habit().name=n.slice(0,30); save(); render(); $('settings-title').textContent = `Settings · ${n}`; } };
 $('del').onclick = ()=>{

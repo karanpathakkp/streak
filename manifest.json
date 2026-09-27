@@ -1,6 +1,6 @@
 {
-  "name": "Streak",
-  "short_name": "Streak",
+  "name": "Go",
+  "short_name": "Go",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
