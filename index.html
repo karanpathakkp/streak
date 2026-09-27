@@ -47,13 +47,12 @@ main{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 1
 .hero{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:26px 0 14px}
 .num{display:flex;align-items:center;gap:8px}
 .count{font-size:clamp(76px,24vw,104px);font-weight:800;line-height:.9;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-.fire{font-size:44px;line-height:1}
-.fire.off{filter:grayscale(1);opacity:.45}
+.fire{width:46px;height:56px;object-fit:contain}
+.fire.off{filter:grayscale(1);opacity:.4}
 .unit{font-size:24px;font-weight:700;margin-top:8px}
 .stats{display:flex;gap:18px;margin-top:10px;color:var(--muted);font-size:13px}
 .stats b{display:block;color:#fff;font-size:17px}
-.mascot{width:150px;height:150px;flex:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.35))}
-.mascot.sleepy{opacity:.85}
+.mascot{width:160px;height:150px;flex:none;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 10px 18px rgba(0,0,0,.35))}
 
 .cal{margin-top:12px;background:rgba(15,30,56,.92);border-radius:24px 24px 0 0;padding:22px 16px 26px;min-height:420px}
 .calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
@@ -65,12 +64,16 @@ main{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 1
 .dow{font-size:14px;color:var(--muted);font-weight:700;padding-bottom:6px}
 .day{aspect-ratio:1;display:grid;place-items:center;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;color:#fff}
 .day span{width:78%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center}
-.day.on span{border:2px solid var(--gold);background:rgba(255,255,255,.08);font-size:20px}
+.day.on span{border:2px solid var(--gold);background:rgba(255,255,255,.08)}
+.day.on.blue span{border-color:#4FA3E8}
+.day.on img{width:62%;height:62%;object-fit:contain}
 .day.today:not(.on) span{border:2px solid rgba(255,255,255,.8)}
 .day.live span{border:2px dashed var(--gold);animation:pulse 1.4s infinite}
-.day.future{color:rgba(255,255,255,.28)}
+.day.future{color:rgba(255,255,255,.5)}
 @keyframes pulse{50%{opacity:.5}}
 .calnote{font-size:12px;color:var(--muted);margin:16px 0 0;text-align:center}
+.legend{display:flex;justify-content:center;gap:18px;margin-top:12px;font-size:12px;color:var(--muted)}
+.legend img{width:14px;height:16px;vertical-align:-3px;margin-right:4px}
 
 .dock{position:fixed;left:0;right:0;bottom:0;padding:12px 20px calc(env(safe-area-inset-bottom,0px) + 14px);
   background:linear-gradient(180deg,rgba(15,30,56,0),rgba(15,30,56,.95) 40%)}
@@ -122,7 +125,7 @@ textarea{min-height:90px;font:13px ui-monospace,monospace}
 
   <section class="hero">
     <div>
-      <div class="num"><span class="count" id="count">0</span><span class="fire" id="fire">🔥</span></div>
+      <div class="num"><span class="count" id="count">0</span><img class="fire" id="fire" src="img/fire-red.png" alt=""></div>
       <div class="unit">days streak</div>
       <div class="stats">
         <div><b id="best">0</b>best</div>
@@ -130,25 +133,7 @@ textarea{min-height:90px;font:13px ui-monospace,monospace}
         <div id="minswrap"><b id="mins">0</b>min today</div>
       </div>
     </div>
-    <svg class="mascot" id="mascot" viewBox="0 0 200 200" aria-hidden="true">
-      <defs><radialGradient id="fur" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#9B7BFF"/><stop offset="1" stop-color="#5A3BC9"/></radialGradient></defs>
-      <g id="mgroup">
-        <ellipse cx="100" cy="185" rx="48" ry="8" fill="rgba(0,0,0,.25)"/>
-        <path d="M60 150 q-18 30 6 32 q14 2 18 -14z" fill="#6E4FE0"/>
-        <path d="M140 150 q18 30 -6 32 q-14 2 -18 -14z" fill="#6E4FE0"/>
-        <path d="M100 30 C40 30 26 100 40 145 C50 175 150 175 160 145 C174 100 160 30 100 30z" fill="url(#fur)"/>
-        <g stroke="#5A3BC9" stroke-width="3" stroke-linecap="round" fill="none" opacity=".6">
-          <path d="M48 60 l-10 -8M46 80 l-12 -3M154 60 l10 -8M156 80 l12 -3M96 28 l2 -12M108 28 l4 -12M86 30 l-3 -11"/>
-        </g>
-        <circle cx="78" cy="88" r="16" fill="#fff"/><circle cx="122" cy="88" r="16" fill="#fff"/>
-        <circle cx="81" cy="90" r="9" fill="#2A6BFF"/><circle cx="119" cy="90" r="9" fill="#2A6BFF"/>
-        <circle cx="83" cy="87" r="4" fill="#0B1D4A"/><circle cx="121" cy="87" r="4" fill="#0B1D4A"/>
-        <circle cx="85" cy="85" r="1.8" fill="#fff"/><circle cx="123" cy="85" r="1.8" fill="#fff"/>
-        <path id="mouth" d="M78 118 q22 26 44 0 q-22 10 -44 0z" fill="#3A1C6E"/>
-        <path d="M84 121 q16 10 32 0 q-16 5 -32 0z" fill="#E96A8A"/>
-        <ellipse cx="60" cy="140" rx="12" ry="10" fill="#8B6CF5"/><ellipse cx="140" cy="140" rx="12" ry="10" fill="#8B6CF5"/>
-      </g>
-    </svg>
+    <img class="mascot" id="mascot" src="img/lazy-0.png" alt="">
   </section>
 
   <section class="cal" aria-label="Calendar">
@@ -161,6 +146,7 @@ textarea{min-height:90px;font:13px ui-monospace,monospace}
     </div>
     <div class="grid" id="grid"></div>
     <p class="calnote" id="calnote"></p>
+    <div class="legend" id="legend"><span><img src="img/fire-red.png" alt="">60 min or more</span><span><img src="img/fire-blue.png" alt="">under 60 min</span></div>
   </section>
 </main>
 
@@ -262,12 +248,54 @@ function streaks(days){
 }
 
 const QUOTES = {
-  idle: ['Check in when you start. Your future self is watching.', 'One session today keeps the flame alive.', 'Start small. Start now.'],
-  live: ['You showed up. Now finish strong.', 'Clock is running. Make it count.', 'Every minute here is a minute earned.'],
-  done: ['You came. You sweat. You conquered!', 'Day done. Flame kept.', 'Consistency looks good on you.'],
-  tap: ['One tap and today is yours.', 'Small wins, stacked daily.', 'Do the thing. Then tap.'],
+  idle: [
+    'Nobody is coming to do it for you. Check in and begin.',
+    'The hardest rep is the first one. Start the clock.',
+    'Snorlax has all day. You have a streak to protect.',
+    'A short session beats a perfect plan. Check in.',
+    'Future you is watching. Give them something to be proud of.',
+    'Motivation shows up after you start, not before.',
+    'The flame is waiting. Wake it up.',
+  ],
+  live: [
+    'You showed up. Now finish strong.',
+    'Clock is running. Make every minute count.',
+    'Push past the point where you want to stop.',
+    'Sixty minutes turns the flame red. Keep going.',
+    'Focus now, rest later.',
+    'This is where the streak is actually built.',
+    'One more block. You have it in you.',
+  ],
+  done: [
+    'You came. You sweat. You conquered!',
+    'Day done. Flame kept. Pikachu approves.',
+    'That is how champions stack days.',
+    'Discipline beat comfort today. Well done.',
+    'Another brick in the wall. Solid work.',
+    'You did the hard thing. Enjoy the rest of the day.',
+    'Streak defended. See you tomorrow.',
+  ],
+  tap: [
+    'One tap and today is yours.',
+    'Small wins, stacked daily.',
+    'Do the thing. Then tap.',
+    'Keep the promise you made to yourself.',
+    'Show up. That is the whole trick.',
+    'No excuses today. Just the tap.',
+    'The chain only breaks if you let it.',
+  ],
+  short: [
+    'Done, but a short one. Blue flame today.',
+    'Counted. Tomorrow, aim for the red flame.',
+    'A short session still beats none. Go longer tomorrow.',
+    'Blue flame. Good start, more fuel next time.',
+    'Day saved. Sixty minutes turns it red.',
+    'Consistency first, then intensity.',
+    'On the board. Push for the full hour tomorrow.',
+  ],
 };
-function quote(kind){ const q = QUOTES[kind]; return q[today0().getDate() % q.length]; }
+const dow = () => today0().getDay();
+function quote(kind){ return QUOTES[kind][dow()]; }
 
 function render(){
   const hb = $('habits'); hb.innerHTML = '';
@@ -289,15 +317,17 @@ function render(){
   $('total').textContent = s.total;
   $('minswrap').hidden = h.mode !== 'timer';
   $('mins').textContent = (today && today.mins) || 0;
-  $('mascot').classList.toggle('sleepy', !today && !live);
-  $('mouth').setAttribute('d', today || live ? 'M78 118 q22 26 44 0 q-22 10 -44 0z' : 'M82 120 q18 8 36 0 q-18 4 -36 0z');
+  const shortDay = h.mode === 'timer' && today && (today.mins||0) < 60;
+  $('mascot').src = today ? `img/active-${dow()}.png` : `img/lazy-${dow()}.png`;
+  $('fire').src = shortDay ? 'img/fire-blue.png' : 'img/fire-red.png';
+  $('legend').hidden = h.mode !== 'timer';
 
   const cta = $('cta'), cancel = $('cancel');
   cta.className = 'cta';
   cancel.hidden = !live;
   if (h.mode === 'timer'){
     if (live){ cta.classList.add('live'); tick(); $('quote').textContent = quote('live'); }
-    else if (today){ cta.classList.add('done'); cta.textContent = `Done today · ${fmtMins(today.mins||0)}`; $('quote').textContent = quote('done'); }
+    else if (today){ cta.classList.add('done'); cta.textContent = `Done today · ${fmtMins(today.mins||0)}`; $('quote').textContent = quote(shortDay ? 'short' : 'done'); }
     else { cta.textContent = 'Check in'; $('quote').textContent = quote('idle'); }
   } else {
     if (today){ cta.classList.add('done'); cta.textContent = 'Done today ✓'; $('quote').textContent = quote('done'); }
@@ -307,7 +337,7 @@ function render(){
 
   const t = today0();
   $('month').textContent = view.toLocaleDateString(undefined,{month:'long'}) + (view.getFullYear()!==t.getFullYear() ? ' ' + view.getFullYear() : '');
-  $('next').disabled = view.getFullYear()===t.getFullYear() && view.getMonth()===t.getMonth();
+  $('next').disabled = view > addDays(t, 366);
   const g = $('grid'); g.innerHTML='';
   ['M','T','W','T','F','S','S'].forEach(x=>{ const e=document.createElement('div'); e.className='dow'; e.textContent=x; g.appendChild(e); });
   for (let i=0;i<(view.getDay()+6)%7;i++) g.appendChild(document.createElement('div'));
@@ -315,13 +345,17 @@ function render(){
   for (let d=1; d<=dim; d++){
     const dt = new Date(view.getFullYear(), view.getMonth(), d), k = keyOf(dt), rec = h.days[k];
     const cell = document.createElement('div'); cell.className='day';
-    const inner = document.createElement('span'); inner.textContent = rec ? '🔥' : d;
-    if (rec) cell.classList.add('on');
+    const inner = document.createElement('span');
+    if (rec){
+      const blue = h.mode === 'timer' && (rec.mins||0) < 60;
+      const img = document.createElement('img'); img.src = blue ? 'img/fire-blue.png' : 'img/fire-red.png'; img.alt = '';
+      inner.appendChild(img); cell.classList.add('on'); if (blue) cell.classList.add('blue');
+    } else inner.textContent = d;
     if (k===tk) cell.classList.add('today');
     if (k===tk && live && !rec) cell.classList.add('live');
     if (dt > t) cell.classList.add('future');
     let label = dt.toDateString();
-    if (rec) label += rec.mins ? `, done, ${fmtMins(rec.mins)}` : ', done';
+    if (rec) label += rec.mins ? `, done, ${fmtMins(rec.mins)}${rec.mins < 60 ? ', short session' : ''}` : ', done';
     cell.title = label; cell.setAttribute('aria-label', label);
     cell.appendChild(inner); g.appendChild(cell);
   }
