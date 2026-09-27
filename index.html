@@ -47,6 +47,7 @@ main{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 1
 .hero{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:26px 0 14px}
 .num{display:flex;align-items:center;gap:8px}
 .count{font-size:clamp(76px,24vw,104px);font-weight:800;line-height:.9;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.count.paused{color:#8C97AD}
 .fire{width:46px;height:56px;object-fit:contain}
 .fire.off{filter:grayscale(1);opacity:.4}
 .unit{font-size:24px;font-weight:700;margin-top:8px}
@@ -69,11 +70,20 @@ main{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 1
 .day.on img{width:62%;height:62%;object-fit:contain}
 .day.today:not(.on) span{border:2px solid rgba(255,255,255,.8)}
 .day.live span{border:2px dashed var(--gold);animation:pulse 1.4s infinite}
+.day.pause span{border:2px solid rgba(255,255,255,.55);color:rgba(255,255,255,.75)}
+.day.pause svg{width:60%;height:60%}
+.day.pause.future span{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.45)}
 .day.future{color:rgba(255,255,255,.5)}
 @keyframes pulse{50%{opacity:.5}}
 .calnote{font-size:12px;color:var(--muted);margin:16px 0 0;text-align:center}
 .legend{display:flex;justify-content:center;gap:18px;margin-top:12px;font-size:12px;color:var(--muted)}
 .legend img{width:14px;height:16px;vertical-align:-3px;margin-right:4px}
+.legend svg{width:14px;height:14px;vertical-align:-2px;margin-right:4px}
+.pauselist{display:grid;gap:6px;margin-top:10px}
+.pauselist div{display:flex;justify-content:space-between;align-items:center;border:1.5px solid #D5DCE7;border-radius:12px;padding:8px 12px;font-size:14px}
+.pauselist button{color:#C2412D;font-size:13px;font-weight:600}
+.pauselist button:disabled{color:#B8C0CF}
+.daterow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
 .dock{position:fixed;left:0;right:0;bottom:0;padding:12px 20px calc(env(safe-area-inset-bottom,0px) + 14px);
   background:linear-gradient(180deg,rgba(15,30,56,0),rgba(15,30,56,.95) 40%)}
@@ -153,7 +163,7 @@ textarea{min-height:90px;font:13px ui-monospace,monospace}
     </div>
     <div class="grid" id="grid"></div>
     <p class="calnote" id="calnote"></p>
-    <div class="legend" id="legend"><span><img src="img/fire-red.png" alt="">60 min or more</span><span><img src="img/fire-blue.png" alt="">under 60 min</span></div>
+    <div class="legend" id="legend"><span><img src="img/fire-red.png" alt="">60 min or more</span><span><img src="img/fire-blue.png" alt="">under 60 min</span><span id="legend-pause"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><rect x="8" y="7" width="3" height="10" rx=".5"/><rect x="13" y="7" width="3" height="10" rx=".5"/></svg>paused</span></div>
   </section>
 </main>
 
@@ -202,6 +212,16 @@ textarea{min-height:90px;font:13px ui-monospace,monospace}
     </div>
     <p class="privacy">Everything is saved on this iPhone and works with no internet. With GitHub sync on, every change is also committed as streak.json to your private repo, including check-in, check-out and duration for each day. The token stays only on this phone.</p>
 
+    <h3>Pause days</h3>
+    <p class="status" id="pause-status"></p>
+    <div class="daterow">
+      <label class="field"><span>From</span><input id="pause-from" type="date"></label>
+      <label class="field"><span>To</span><input id="pause-to" type="date"></label>
+    </div>
+    <button class="tool primary" id="pause-add" style="margin-top:8px">Add pause</button>
+    <div class="pauselist" id="pauselist"></div>
+    <p class="privacy">Paused days neither break nor grow the streak. You get 30 pause days in any 12-month span, for today or future dates only. If you still check out on a paused day, it counts as a normal done day.</p>
+
     <h3>App icon</h3>
     <div class="iconrow"><img id="icon-preview" src="apple-touch-icon.png?v=2" alt=""><label class="tool" style="flex:1;text-align:center">Choose an image<input id="icon-file" type="file" accept="image/*" hidden></label></div>
     <label class="field"><span>App repo (where the icon files live)</span><input id="apprepo" value="karanpathakkp/streak" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
@@ -220,8 +240,10 @@ textarea{min-height:90px;font:13px ui-monospace,monospace}
 
     <h3>Lazy · before check-out</h3>
     <div class="gallery" id="gallery-lazy"></div>
-    <h3>Energetic · after check-out</h3>
+    <h3>Energetic · after check-out, 60 min or more</h3>
     <div class="gallery" id="gallery-active"></div>
+    <h3>Short · after check-out, under 60 min</h3>
+    <div class="gallery" id="gallery-short"></div>
   </div>
 </dialog>
 
@@ -239,11 +261,12 @@ function normalize(s){
     for (const k in h.days){ const v = h.days[k]; if (v === true) h.days[k] = { done:true }; else if (!v) delete h.days[k]; }
   });
   if (typeof s.active !== 'number' || s.active >= s.habits.length) s.active = 0;
+  if (!s.pauses || typeof s.pauses !== 'object') s.pauses = {};
   return s;
 }
 function load(){
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.habits && s.habits.length) return normalize(s); } catch(e){}
-  return { habits:[{ id:'h'+Date.now(), name:'Workout', mode:'timer', days:{} }], active:0 };
+  return { habits:[{ id:'h'+Date.now(), name:'Workout', mode:'timer', days:{} }], active:0, pauses:{} };
 }
 let state = load();
 let view = today0(); view.setDate(1);
@@ -261,16 +284,25 @@ function hint(t){ const h = $('hint'); h.textContent = t; h.classList.add('show'
 const fmtClock = ms => { const s = Math.max(0, Math.floor(ms/1000)); return `${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`; };
 const fmtMins = m => m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m} min`;
 
+const parseKey = k => { const [y,m,d] = k.split('-').map(Number); return new Date(y,m-1,d); };
+const isPaused = k => !!state.pauses[k];
 function streaks(days){
   const t = today0();
   let d = days[keyOf(t)] ? t : addDays(t,-1), cur = 0;
-  while (days[keyOf(d)]) { cur++; d = addDays(d,-1); }
+  for (;;){
+    const k = keyOf(d);
+    if (days[k]) cur++;
+    else if (!isPaused(k)) break;
+    d = addDays(d,-1);
+  }
   const keys = Object.keys(days).filter(k=>days[k]).sort();
-  let best = 0, run = 0, prev = null;
-  for (const k of keys){
-    const [y,m,dd] = k.split('-').map(Number); const dt = new Date(y,m-1,dd);
-    run = (prev && keyOf(addDays(prev,1)) === k) ? run+1 : 1;
-    best = Math.max(best, run); prev = dt;
+  let best = 0, run = 0;
+  if (keys.length){
+    for (let dt = parseKey(keys[0]); dt <= t; dt = addDays(dt,1)){
+      const k = keyOf(dt);
+      if (days[k]) { run++; best = Math.max(best, run); }
+      else if (!isPaused(k)) run = 0;
+    }
   }
   return { cur, best, total: keys.length };
 }
@@ -312,6 +344,15 @@ const QUOTES = {
     'No excuses today. Just the tap.',
     'The chain only breaks if you let it.',
   ],
+  pause: [
+    'Paused day. Rest is part of the plan.',
+    'Streak is safe today. Recharge.',
+    'Nothing to prove today. Come back stronger.',
+    'Rest day booked. The flame waits for you.',
+    'Recovery counts. Enjoy the day off.',
+    'Paused, not broken. See you tomorrow.',
+    'Even champions take a day. This is yours.',
+  ],
   short: [
     'Done, but a short one. Blue flame today.',
     'Counted. Tomorrow, aim for the red flame.',
@@ -346,9 +387,13 @@ function render(){
   $('minswrap').hidden = h.mode !== 'timer';
   $('mins').textContent = (today && today.mins) || 0;
   const shortDay = h.mode === 'timer' && today && (today.mins||0) < 60;
-  $('mascot').src = today ? `img/active-${dow()}.png` : `img/lazy-${dow()}.png`;
+  const pausedToday = !today && !live && isPaused(tk);
+  $('mascot').src = today ? `img/${shortDay ? 'short' : 'active'}-${dow()}.png` : `img/lazy-${dow()}.png`;
   $('fire').src = shortDay ? 'img/fire-blue.png' : 'img/fire-red.png';
-  $('legend').hidden = h.mode !== 'timer';
+  $('fire').classList.toggle('off', s.cur === 0 || pausedToday);
+  $('count').classList.toggle('paused', pausedToday);
+  $('legend').hidden = h.mode !== 'timer' && !Object.keys(state.pauses).length;
+  $('legend-pause').hidden = !Object.keys(state.pauses).length;
 
   const cta = $('cta'), cancel = $('cancel');
   cta.className = 'cta';
@@ -356,10 +401,10 @@ function render(){
   if (h.mode === 'timer'){
     if (live){ cta.classList.add('live'); tick(); $('quote').textContent = quote('live'); }
     else if (today){ cta.classList.add('done'); cta.textContent = `Done today · ${fmtMins(today.mins||0)}`; $('quote').textContent = quote(shortDay ? 'short' : 'done'); }
-    else { cta.textContent = 'Check in'; $('quote').textContent = quote('idle'); }
+    else { cta.textContent = 'Check in'; $('quote').textContent = quote(pausedToday ? 'pause' : 'idle'); }
   } else {
     if (today){ cta.classList.add('done'); cta.textContent = 'Done today ✓'; $('quote').textContent = quote('done'); }
-    else { cta.textContent = 'Mark today done'; $('quote').textContent = quote('tap'); }
+    else { cta.textContent = 'Mark today done'; $('quote').textContent = quote(pausedToday ? 'pause' : 'tap'); }
   }
   $('calnote').textContent = h.mode === 'timer' ? 'Days are marked only by checking out. History cannot be edited.' : 'Days are marked only from today. History cannot be edited.';
 
@@ -378,12 +423,14 @@ function render(){
       const blue = h.mode === 'timer' && (rec.mins||0) < 60;
       const img = document.createElement('img'); img.src = blue ? 'img/fire-blue.png' : 'img/fire-red.png'; img.alt = '';
       inner.appendChild(img); cell.classList.add('on'); if (blue) cell.classList.add('blue');
-    } else inner.textContent = d;
+    } else if (isPaused(k)) { inner.innerHTML = PAUSE_SVG; cell.classList.add('pause'); }
+    else inner.textContent = d;
     if (k===tk) cell.classList.add('today');
     if (k===tk && live && !rec) cell.classList.add('live');
     if (dt > t) cell.classList.add('future');
     let label = dt.toDateString();
     if (rec) label += rec.mins ? `, done, ${fmtMins(rec.mins)}${rec.mins < 60 ? ', short session' : ''}` : ', done';
+    else if (isPaused(k)) label += ', paused';
     cell.title = label; cell.setAttribute('aria-label', label);
     cell.appendChild(inner); g.appendChild(cell);
   }
@@ -449,13 +496,73 @@ $('new-create').onclick = ()=>{
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = ()=>b.closest('dialog').close());
 document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
 
-$('open-settings').onclick = ()=>{ $('settings-title').textContent = `Settings · ${habit().name}`; $('settings-sheet').showModal(); };
+$('open-settings').onclick = ()=>{ $('settings-title').textContent = `Settings · ${habit().name}`; renderPauses(); $('settings-sheet').showModal(); };
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-for (const kind of ['lazy','active']){
+for (const kind of ['lazy','active','short']){
   const g = $('gallery-' + kind);
   DAYS.forEach((d,i)=>{ const f = document.createElement('figure'); const im = document.createElement('img'); im.src = `img/${kind}-${i}.png`; im.alt = ''; im.loading = 'lazy';
     const c = document.createElement('figcaption'); c.textContent = d.slice(0,3); f.append(im, c); g.appendChild(f); });
 }
+
+const PAUSE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="5" width="3.5" height="14" rx=".6"/><rect x="13.5" y="5" width="3.5" height="14" rx=".6"/></svg>';
+const PAUSE_LIMIT = 30, PAUSE_WINDOW = 365;
+const dayNum = k => Math.round(parseKey(k).getTime() / 864e5);
+function pauseRanges(){
+  const keys = Object.keys(state.pauses).sort(); const out = [];
+  for (const k of keys){
+    const last = out[out.length-1];
+    if (last && keyOf(addDays(parseKey(last.to),1)) === k) { last.to = k; last.n++; }
+    else out.push({ from:k, to:k, n:1 });
+  }
+  return out;
+}
+function pauseWindowOk(keys){
+  const nums = keys.map(dayNum).sort((a,b)=>a-b);
+  let j = 0;
+  for (let i = 0; i < nums.length; i++){
+    while (nums[j] < nums[i] - PAUSE_WINDOW + 1) j++;
+    if (i - j + 1 > PAUSE_LIMIT) return false;
+  }
+  return true;
+}
+function pauseStatus(t, cls){ const e = $('pause-status'); e.textContent = t; e.className = 'status' + (cls ? ' ' + cls : ''); }
+function renderPauses(){
+  const t = today0(), tk = keyOf(t), since = keyOf(addDays(t, -PAUSE_WINDOW + 1));
+  const used = Object.keys(state.pauses).filter(k => k >= since && k <= tk).length;
+  const ahead = Object.keys(state.pauses).filter(k => k > tk).length;
+  pauseStatus(`${used} of ${PAUSE_LIMIT} used in the last 12 months` + (ahead ? ` · ${ahead} scheduled` : ''));
+  const list = $('pauselist'); list.innerHTML = '';
+  for (const r of pauseRanges()){
+    const row = document.createElement('div');
+    const fmt = k => parseKey(k).toLocaleDateString(undefined, { day:'numeric', month:'short' });
+    const label = document.createElement('span'); label.textContent = (r.from === r.to ? fmt(r.from) : `${fmt(r.from)} – ${fmt(r.to)}`) + ` · ${r.n} day${r.n>1?'s':''}`;
+    const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = 'Remove';
+    rm.disabled = r.to < tk;
+    rm.onclick = ()=>{
+      if (!confirm('Remove this pause? Only today and future days are removed.')) return;
+      for (let d = parseKey(r.from); d <= parseKey(r.to); d = addDays(d,1)){ const k = keyOf(d); if (k >= tk) delete state.pauses[k]; }
+      save(); render(); renderPauses();
+    };
+    row.append(label, rm); list.appendChild(row);
+  }
+  $('pause-from').min = tk; $('pause-to').min = tk;
+  if (!$('pause-from').value) $('pause-from').value = tk;
+}
+$('pause-from').onchange = ()=>{ if (!$('pause-to').value || $('pause-to').value < $('pause-from').value) $('pause-to').value = $('pause-from').value; };
+$('pause-add').onclick = ()=>{
+  const from = $('pause-from').value, to = $('pause-to').value || from, tk = keyOf(today0());
+  if (!from) { pauseStatus('Pick a start date', 'bad'); return; }
+  if (from < tk) { pauseStatus('Pause days can only be today or later', 'bad'); return; }
+  if (to < from) { pauseStatus('End date is before the start date', 'bad'); return; }
+  const add = [];
+  for (let d = parseKey(from); d <= parseKey(to); d = addDays(d,1)){ const k = keyOf(d); if (!state.pauses[k]) add.push(k); }
+  if (!add.length) { pauseStatus('Those days are already paused', 'bad'); return; }
+  if (add.length > PAUSE_LIMIT) { pauseStatus(`That is ${add.length} days. The limit is ${PAUSE_LIMIT} in any 12 months.`, 'bad'); return; }
+  if (!pauseWindowOk(Object.keys(state.pauses).concat(add))) { pauseStatus(`Adding ${add.length} day${add.length>1?'s':''} would exceed ${PAUSE_LIMIT} pause days within 12 months.`, 'bad'); return; }
+  for (const k of add) state.pauses[k] = true;
+  save(); render(); renderPauses(); $('pause-to').value = '';
+  hint(`${add.length} pause day${add.length>1?'s':''} added`);
+};
 
 const ICON_SIZES = [[512,'icon-512.png'],[192,'icon-192.png'],[180,'apple-touch-icon.png']];
 let iconSource = null;

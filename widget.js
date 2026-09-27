@@ -22,10 +22,14 @@ async function loadState(token) {
 
 const pad = n => String(n).padStart(2, "0");
 const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-function streak(days) {
+function streak(days, pauses) {
   const t = new Date(); t.setHours(0, 0, 0, 0);
   let d = days[keyOf(t)] ? t : new Date(t.getTime() - 864e5), n = 0;
-  while (days[keyOf(d)]) { n++; d = new Date(d.getTime() - 864e5); }
+  for (;;) {
+    const k = keyOf(d);
+    if (days[k]) n++; else if (!pauses[k]) break;
+    d = new Date(d.getTime() - 864e5);
+  }
   return n;
 }
 
@@ -38,19 +42,19 @@ function build(state, error) {
   w.addSpacer(6);
   if (error) { const e = w.addText(error); e.font = Font.systemFont(12); e.textColor = Color.white(); return w; }
   const today = keyOf(new Date());
-  const habits = state.habits || [];
+  const habits = state.habits || [], pauses = state.pauses || {}, pausedToday = !!pauses[today];
   const small = config.widgetFamily === "small" || !config.widgetFamily && false;
   const list = small ? habits.slice(0, 1) : habits.slice(0, 4);
   for (const h of list) {
     const rec = h.days[today];
     const short = h.mode === "timer" && rec && (rec.mins || 0) < 60;
     const row = w.addStack(); row.centerAlignContent();
-    const num = row.addText(String(streak(h.days))); num.font = Font.boldSystemFont(small ? 44 : 26); num.textColor = Color.white();
+    const num = row.addText(String(streak(h.days, pauses))); num.font = Font.boldSystemFont(small ? 44 : 26); num.textColor = pausedToday && !rec ? new Color("#8C97AD") : Color.white();
     row.addSpacer(6);
-    const flame = row.addText(rec ? (short ? "🔵" : "🔥") : "⚪"); flame.font = Font.systemFont(small ? 22 : 16);
+    const flame = row.addText(rec ? (short ? "🔵" : "🔥") : (pausedToday ? "⏸" : "⚪")); flame.font = Font.systemFont(small ? 22 : 16);
     row.addSpacer();
     const name = row.addText(h.name); name.font = Font.mediumSystemFont(small ? 13 : 15); name.textColor = new Color("#EEF2F7"); name.lineLimit = 1;
-    if (!small) { const sub = w.addText(rec ? (rec.mins ? `done · ${rec.mins} min` : "done today") : "not yet today"); sub.font = Font.systemFont(11); sub.textColor = new Color("#9AA8C2"); }
+    if (!small) { const sub = w.addText(rec ? (rec.mins ? `done · ${rec.mins} min` : "done today") : (pausedToday ? "paused today" : "not yet today")); sub.font = Font.systemFont(11); sub.textColor = new Color("#9AA8C2"); }
     w.addSpacer(small ? 2 : 6);
   }
   if (!list.length) { const e = w.addText("No habits yet"); e.textColor = Color.white(); }
