@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Go</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -20,14 +20,14 @@
 }
 *,*::before,*::after{box-sizing:inherit}
 [hidden]{display:none!important}
-html,body{margin:0;background:var(--navy);color:var(--ink);min-height:100%}
+html,body{margin:0;background:var(--navy);color:var(--ink);min-height:100%;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%}
 body{
   font-family:-apple-system,system-ui,"SF Pro Text","Segoe UI",Roboto,sans-serif;
   -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;
   background:linear-gradient(180deg,#1A8F66 0%,#137A5C 22%,#0F4E4A 42%,#0F2A40 60%,#0F1E38 100%);
   background-attachment:fixed;
 }
-button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0;touch-action:manipulation}
 button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 main{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 20px calc(env(safe-area-inset-bottom,0px) + 110px)}
 
@@ -627,6 +627,10 @@ window.addEventListener('online', ()=>sync.pull());
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ render(); sync.pull(); } });
 sync.pull();
 
+for (const ev of ['gesturestart','gesturechange','gestureend']) document.addEventListener(ev, e => e.preventDefault(), { passive:false });
+document.addEventListener('touchmove', e => { if (e.scale && e.scale !== 1) e.preventDefault(); }, { passive:false });
+let lastTouch = 0;
+document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 300 && !e.target.closest('input,textarea')) e.preventDefault(); lastTouch = now; }, { passive:false });
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 render();
 </script>
